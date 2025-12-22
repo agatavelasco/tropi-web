@@ -1,36 +1,158 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌱 Tropi Web
 
-## Getting Started
+Aplicação **front-end** do projeto **Tropi**, desenvolvida com **Next.js**, focada em uma experiência **mobile-first** para gerenciamento de **clientes** e **atendimentos**.
 
-First, run the development server:
+O projeto consome a **Tropi API** e foi estruturado para ser simples de executar localmente, além de estar preparado para uso com **Docker**.
+
+---
+
+## 📌 Descrição do Projeto
+
+O **Tropi Web** é a interface do sistema Tropi, responsável por:
+
+* Exibir e gerenciar clientes
+* Registrar e visualizar atendimentos
+* Navegação mobile com Bottom Navigation
+* Integração com API REST
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+* **Node.js 20+**
+* **Next.js (App Router)**
+* **React**
+* **TypeScript**
+* **Tailwind CSS**
+* **Docker**
+* **Docker Compose**
+* **Lucide Icons**
+* **Class Variance Authority (CVA)**
+
+---
+
+
+## 🚀 Instruções de Instalação
+
+### 🔹 Pré-requisitos
+
+Antes de iniciar, certifique-se de ter instalado:
+
+* **Node.js >= 20.9**
+* **npm**
+* **Docker** (opcional, mas recomendado)
+
+---
+
+## ▶️ Executando o projeto localmente (sem Docker)
+
+### 1️⃣ Clonar o repositório
+
+```bash
+git clone https://github.com/seu-usuario/tropi-web.git
+cd tropi-web
+```
+
+---
+
+### 2️⃣ Instalar as dependências
+
+```bash
+npm install
+```
+
+---
+
+### 3️⃣ Configurar variáveis de ambiente
+
+Crie um arquivo `.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+> A URL deve apontar para a **Tropi API** em execução.
+
+---
+
+### 4️⃣ Executar o projeto
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação ficará disponível em:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+👉 **[http://localhost:3000](http://localhost:3000)**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🐳 Executando com Docker
 
-To learn more about Next.js, take a look at the following resources:
+### 🔹 Build da imagem
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker build -t tropi-web .
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+### 🔹 Executar o container
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+docker run --rm -p 3000:3000 \
+  -e NEXT_PUBLIC_API_URL=http://localhost:8000 \
+  tropi-web
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Acesse:
+
+👉 **[http://localhost:3000](http://localhost:3000)**
+
+---
+
+## 🐳 Docker Compose (Front + API)
+
+Para subir **front-end e back-end juntos**, utilize um `docker-compose.yml` no diretório raiz do projeto:
+
+```yaml
+services:
+  api:
+    build: ./tropi-api
+    container_name: tropi_api
+    ports:
+      - "8000:8000"
+
+  web:
+    build: ./tropi-web
+    container_name: tropi_web
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:8000
+    depends_on:
+      - api
+```
+
+Executar:
+
+```bash
+docker compose up --build
+```
+
+---
+
+
+## 🔗 Integração com a API
+
+A aplicação consome a **Tropi API** através da variável:
+
+```ts
+NEXT_PUBLIC_API_URL
+```
+
+Exemplo de chamada:
+
+```ts
+fetch(`${process.env.NEXT_PUBLIC_API_URL}/clientes`)
+```
