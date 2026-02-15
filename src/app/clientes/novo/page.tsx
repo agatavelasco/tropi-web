@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
-import { Cliente } from "@/app/types/cliente";
 import { Button } from "@/app/components/Buttom";
 import { Header } from "@/app/components/Header";
 import AppShell from "@/app/components/AppShell";
@@ -14,10 +14,12 @@ interface ClienteForm {
   telefone: string;
   cep: string;
   logradouro: string;
+  numero: string;
   complemento: string;
   bairro: string;
   localidade: string;
   uf: string;
+  observacoes: string;
 }
 
 const EMPTY_FORM: ClienteForm = {
@@ -27,19 +29,23 @@ const EMPTY_FORM: ClienteForm = {
   telefone: "",
   cep: "",
   logradouro: "",
+  numero: "",
   complemento: "",
   bairro: "",
   localidade: "",
   uf: "",
+  observacoes: "",
 };
 
-export default function ClientesPage() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+export default function NovoClientePage() {
+  const router = useRouter();
   const [form, setForm] = useState<ClienteForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [ultimoCepConsultado, setUltimoCepConsultado] = useState("");
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
 
@@ -76,10 +82,8 @@ export default function ClientesPage() {
 
     try {
       setLoading(true);
-      const novoCliente = await apiPost("/clientes", form);
-      setClientes((lista) => [...lista, novoCliente]);
-      setForm(EMPTY_FORM);
-      setUltimoCepConsultado("");
+      await apiPost("/clientes", form);
+      router.push("/clientes");
     } catch (err) {
       console.error("Erro ao salvar cliente", err);
       alert("Erro ao salvar cliente.");
@@ -89,88 +93,200 @@ export default function ClientesPage() {
   };
 
   return (
-    <AppShell header={<Header title="Novo Cliente"/>}>
-            <form
+    <AppShell header={<Header title="Novo Cliente" />}>
+      <form
         onSubmit={handleSubmit}
-        style={{ display: "grid", gap: 8, maxWidth: 400 }}
+        className="flex flex-col gap-6 p-6"
       >
-        <input
-          name="nome"
-          placeholder="Nome"
-          value={form.nome}
-          onChange={handleChange}
-          required
-        />
+        {/* Card 1 — Dados Pessoais */}
+        <div className="tropi-card flex flex-col gap-6">
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="nome">
+              Nome Completo
+            </label>
+            <input
+              id="nome"
+              name="nome"
+              className="tropi-input"
+              placeholder="Nome do cliente"
+              value={form.nome}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          name="cpf"
-          placeholder="CPF"
-          value={form.cpf}
-          onChange={handleChange}
-          required
-        />
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="cpf">
+              CPF
+            </label>
+            <input
+              id="cpf"
+              name="cpf"
+              className="tropi-input"
+              placeholder="000.000.000-00"
+              value={form.cpf}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          name="email"
-          type="email"
-          placeholder="E-mail"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="telefone">
+              Telefone
+            </label>
+            <input
+              id="telefone"
+              name="telefone"
+              className="tropi-input"
+              placeholder="(11) 99999-9999"
+              value={form.telefone}
+              onChange={handleChange}
+            />
+          </div>
 
-        <input
-          name="telefone"
-          placeholder="Telefone"
-          value={form.telefone}
-          onChange={handleChange}
-        />
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              className="tropi-input"
+              placeholder="cliente@email.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        </div>
 
-        <input
-          name="cep"
-          placeholder="CEP"
-          value={form.cep}
-          onChange={handleChange}
-        />
+        {/* Card 2 — Endereco */}
+        <div className="tropi-card flex flex-col gap-6">
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="cep">
+              CEP
+            </label>
+            <input
+              id="cep"
+              name="cep"
+              className="tropi-input"
+              placeholder="00000-000"
+              value={form.cep}
+              onChange={handleChange}
+            />
+          </div>
 
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="localidade">
+              Cidade
+            </label>
+            <input
+              id="localidade"
+              name="localidade"
+              className="tropi-input"
+              placeholder="São Paulo"
+              value={form.localidade}
+              onChange={handleChange}
+            />
+          </div>
 
-        <input
-          name="logradouro"
-          placeholder="Logradouro"
-          value={form.logradouro}
-          onChange={handleChange}
-        />
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="uf">
+              UF
+            </label>
+            <input
+              id="uf"
+              name="uf"
+              className="tropi-input"
+              placeholder="SP"
+              value={form.uf}
+              onChange={handleChange}
+              maxLength={2}
+            />
+          </div>
 
-        <input
-          name="bairro"
-          placeholder="Bairro"
-          value={form.bairro}
-          onChange={handleChange}
-        />
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="logradouro">
+              Logradouro
+            </label>
+            <input
+              id="logradouro"
+              name="logradouro"
+              className="tropi-input"
+              placeholder="Rua, avenida..."
+              value={form.logradouro}
+              onChange={handleChange}
+            />
+          </div>
 
-        <input
-          name="localidade"
-          placeholder="Cidade"
-          value={form.localidade}
-          onChange={handleChange}
-        />
+          <div className="flex gap-3">
+            <div className="tropi-field w-1/3">
+              <label className="tropi-label" htmlFor="numero">
+                Numero
+              </label>
+              <input
+                id="numero"
+                name="numero"
+                className="tropi-input"
+                placeholder="123"
+                value={form.numero}
+                onChange={handleChange}
+              />
+            </div>
 
-        <input
-          name="uf"
-          placeholder="UF"
-          value={form.uf}
-          onChange={handleChange}
-        />
+            <div className="tropi-field flex-1">
+              <label className="tropi-label" htmlFor="bairro">
+                Bairro
+              </label>
+              <input
+                id="bairro"
+                name="bairro"
+                className="tropi-input"
+                placeholder="Bairro"
+                value={form.bairro}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
 
-        <input
-          name="complemento"
-          placeholder="Complemento / Número"
-          value={form.complemento}
-          onChange={handleChange}
-        />
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="complemento">
+              Complemento
+            </label>
+            <input
+              id="complemento"
+              name="complemento"
+              className="tropi-input"
+              placeholder="Apto, bloco..."
+              value={form.complemento}
+              onChange={handleChange}
+            />
+          </div>
 
-        <Button type="submit" disabled={loading} variant={"tropi"} size={"lg"}>
-          {loading ? "Salvando..." : "Salvar cliente"}
+          <div className="tropi-field">
+            <label className="tropi-label" htmlFor="observacoes">
+              Observações
+            </label>
+            <textarea
+              id="observacoes"
+              name="observacoes"
+              className="tropi-textarea"
+              placeholder="Informações adicionais..."
+              value={form.observacoes}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        {/* Botao Salvar */}
+        <Button
+          type="submit"
+          variant="tropi"
+          size="tropi"
+          disabled={loading}
+        >
+          {loading ? "Salvando..." : "Salvar Cliente"}
         </Button>
       </form>
     </AppShell>

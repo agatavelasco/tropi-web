@@ -209,6 +209,80 @@ html {
   font-size: var(--font-size);
 }
 
+/* ── Tropi Form Components ── */
+
+.tropi-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 4px 24px rgba(45, 42, 38, 0.08);
+  padding: 24px;
+}
+
+.tropi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tropi-label {
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 14px;
+  color: #0a0a0a;
+  letter-spacing: -0.15px;
+}
+
+.tropi-input {
+  height: 48px;
+  background: #f3f3f5;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 4px 12px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #0a0a0a;
+  letter-spacing: -0.15px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.tropi-input::placeholder {
+  color: #717182;
+}
+
+.tropi-input:focus {
+  border-color: var(--tropi-moss-green);
+}
+
+.tropi-textarea {
+  min-height: 80px;
+  background: #f3f3f5;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #0a0a0a;
+  letter-spacing: -0.15px;
+  outline: none;
+  width: 100%;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.tropi-textarea::placeholder {
+  color: #717182;
+}
+
+.tropi-textarea:focus {
+  border-color: var(--tropi-moss-green);
+}
+
 /* Hide scrollbars in carousels */
 .overflow-x-auto::-webkit-scrollbar {
   display: none;

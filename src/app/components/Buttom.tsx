@@ -16,8 +16,8 @@ const buttonVariants = cva(
           "border bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        tropi: 
-            "bg-[var(--tropi-moss-green)] text-white hover:opacity-90",
+        tropi:
+          "text-white font-semibold text-lg tracking-[-0.44px] hover:opacity-90 shadow-[0px_4px_20px_rgba(61,89,25,0.25)]",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
@@ -26,6 +26,7 @@ const buttonVariants = cva(
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        tropi: "h-14 rounded-[16px] px-6 w-full",
         icon: "size-9 rounded-md",
       },
     },
@@ -41,6 +42,7 @@ function Button({
   variant,
   size,
   asChild = false,
+  style,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -48,10 +50,19 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button";
 
+  const tropiStyle =
+    variant === "tropi"
+      ? {
+          background: "linear-gradient(171deg, #3D5919 0%, #4A6B20 100%)",
+          ...style,
+        }
+      : style;
+
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      style={tropiStyle}
       {...props}
     />
   );
