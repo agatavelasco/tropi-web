@@ -2,7 +2,7 @@
 
 Aplicação **front-end** do projeto **Tropi**, desenvolvida com **Next.js**, focada em uma experiência **mobile-first** para gerenciamento de **clientes** e **atendimentos**.
 
-O projeto consome a **Tropi API** e foi estruturado para ser simples de executar localmente, além de estar preparado para uso com **Docker**.
+O projeto consome a **Tropi API** e utiliza **Supabase** para autenticação.
 
 ---
 
@@ -13,7 +13,8 @@ O **Tropi Web** é a interface do sistema Tropi, responsável por:
 * Exibir e gerenciar clientes
 * Registrar e visualizar atendimentos
 * Navegação mobile com Bottom Navigation
-* Integração com API REST
+* Autenticação via **Supabase Auth**
+* Integração com API REST (JWT automático)
 
 ---
 
@@ -24,32 +25,28 @@ O **Tropi Web** é a interface do sistema Tropi, responsável por:
 * **React**
 * **TypeScript**
 * **Tailwind CSS**
+* **Supabase** (Auth)
+* **Sentry** (monitoramento)
 * **Docker**
-* **Docker Compose**
 * **Lucide Icons**
 * **Class Variance Authority (CVA)**
 
 ---
 
-
 ## 🚀 Instruções de Instalação
 
 ### 🔹 Pré-requisitos
 
-Antes de iniciar, certifique-se de ter instalado:
-
 * **Node.js >= 20.9**
 * **npm**
-* **Docker** (opcional, mas recomendado)
+* **Docker** (opcional)
 
 ---
-
-## ▶️ Executando o projeto localmente (sem Docker)
 
 ### 1️⃣ Clonar o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/tropi-web.git
+git clone https://github.com/agatavelasco/tropi-web.git
 cd tropi-web
 ```
 
@@ -65,13 +62,14 @@ npm install
 
 ### 3️⃣ Configurar variáveis de ambiente
 
-Crie um arquivo `.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+```bash
+cp .env.example .env.local
 ```
 
-> A URL deve apontar para a **Tropi API** em execução.
+Preencha o `.env.local` com suas credenciais do Supabase:
+- `NEXT_PUBLIC_SUPABASE_URL` — URL do projeto Supabase
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Chave pública anon
+- `NEXT_PUBLIC_API_URL` — URL da Tropi API (padrão: `http://127.0.0.1:8000`)
 
 ---
 
@@ -102,12 +100,10 @@ docker build -t tropi-web .
 ```bash
 docker run --rm -p 3000:3000 \
   -e NEXT_PUBLIC_API_URL=http://localhost:8000 \
+  -e NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_anon_key \
   tropi-web
 ```
-
-Acesse:
-
-👉 **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
@@ -142,17 +138,26 @@ docker compose up --build
 
 ---
 
-
 ## 🔗 Integração com a API
 
-A aplicação consome a **Tropi API** através da variável:
+Todas as chamadas à API enviam automaticamente o **token JWT** do Supabase Auth via header `Authorization: Bearer <token>`.
 
-```ts
-NEXT_PUBLIC_API_URL
-```
+O cliente HTTP está em `src/lib/api.ts` e o cliente Supabase em `src/lib/supabase.ts`.
 
-Exemplo de chamada:
+---
 
-```ts
-fetch(`${process.env.NEXT_PUBLIC_API_URL}/clientes`)
+## 📌 Estrutura do Projeto
+
+```text
+tropi-web/
+├── .env.example
+├── .github/workflows/ci.yml
+├── src/
+│   ├── app/
+│   └── lib/
+│       ├── api.ts
+│       └── supabase.ts
+├── package.json
+├── dockerfile
+└── README.md
 ```
