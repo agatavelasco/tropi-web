@@ -21,10 +21,23 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
+async function checkResponse(res: Response, label: string) {
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.detail ?? JSON.stringify(body);
+    } catch {
+      detail = await res.text().catch(() => "");
+    }
+    throw new Error(`[${res.status}] ${label}${detail ? `: ${detail}` : ""}`);
+  }
+}
+
 export async function apiGet(path: string) {
   const headers = await getAuthHeaders();
   const res = await fetch(`${API_URL}${path}`, { headers });
-  if (!res.ok) throw new Error(`Erro ao buscar ${path}`);
+  await checkResponse(res, `GET ${path}`);
   return res.json();
 }
 
@@ -35,7 +48,7 @@ export async function apiPost(path: string, data: unknown) {
     headers,
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(`Erro ao enviar para ${path}`);
+  await checkResponse(res, `POST ${path}`);
   return res.json();
 }
 
@@ -46,7 +59,7 @@ export async function apiPut(path: string, data: unknown) {
     headers,
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(`Erro ao atualizar ${path}`);
+  await checkResponse(res, `PUT ${path}`);
   return res.json();
 }
 
@@ -56,6 +69,6 @@ export async function apiDelete(path: string) {
     method: "DELETE",
     headers,
   });
-  if (!res.ok) throw new Error(`Erro ao excluir ${path}`);
+  await checkResponse(res, `DELETE ${path}`);
   return true;
 }
