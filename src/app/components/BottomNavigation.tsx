@@ -7,10 +7,10 @@ interface BottomNavigationProps {
 
 export function BottomNavigation({ currentScreen, onNavigate }: BottomNavigationProps) {
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home', active: true },
+    { id: 'home', icon: Home, label: 'Início', active: true },
     { id: 'client-list', icon: Users, label: 'Clientes', active: true },
     { id: 'calendar', icon: Calendar, label: 'Agenda', active: false },
-    { id: 'settings', icon: Settings, label: 'Config', active: false }
+    { id: 'settings', icon: Settings, label: 'Config', active: true }
   ];
 
   return (

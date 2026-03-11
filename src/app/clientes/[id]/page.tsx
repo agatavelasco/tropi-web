@@ -1,27 +1,39 @@
 "use client";
 
-import { useEffect, useState, ChangeEvent } from "react";
-import Link from "next/link";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { apiGet, apiPut, apiDelete } from "@/lib/api";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Plus,
+  ChevronRight,
+  SquarePen,
+} from "lucide-react";
+import { apiGet } from "@/lib/api";
+import { Cliente } from "@/app/types/cliente";
 import { Atendimento } from "@/app/types/atendimento";
 import { Button } from "@/app/components/Buttom";
 import { Header } from "@/app/components/Header";
 import AppShell from "@/app/components/AppShell";
+import ListCard from "@/app/components/ListCard";
+import ServicoIcon from "@/app/components/ServicoIcon";
+import { formatPhone, formatDate } from "@/lib/formatters";
 
-interface ClienteForm {
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  cep: string;
-  logradouro: string;
-  complemento: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
-  estado: string;
-  numero: string;
+function buildEndereco(cliente: Cliente): string {
+  const parts: string[] = [];
+  if (cliente.logradouro) {
+    let rua = cliente.logradouro;
+    if (cliente.numero) rua += `, ${cliente.numero}`;
+    parts.push(rua);
+  }
+  if (cliente.bairro) parts.push(cliente.bairro);
+  if (cliente.localidade) {
+    let cidade = cliente.localidade;
+    if (cliente.uf) cidade += ` - ${cliente.uf}`;
+    parts.push(cidade);
+  }
+  return parts.join(", ");
 }
 
 export default function ClientePage() {
@@ -29,47 +41,21 @@ export default function ClientePage() {
   const router = useRouter();
   const id = params.id as string;
 
-  const [loading, setLoading] = useState(true);
-  const [salvando, setSalvando] = useState(false);
-  const [excluindo, setExcluindo] = useState(false);
+  const [cliente, setCliente] = useState<Cliente | null>(null);
   const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
-
-  const [form, setForm] = useState<ClienteForm>({
-    nome: "",
-    cpf: "",
-    email: "",
-    telefone: "",
-    cep: "",
-    logradouro: "",
-    complemento: "",
-    bairro: "",
-    localidade: "",
-    uf: "",
-    estado: "",
-    numero: "",
-  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const cliente = await apiGet(`/clientes/${id}`);
-        setForm({
-          nome: cliente.nome ?? "",
-          cpf: cliente.cpf ?? "",
-          email: cliente.email ?? "",
-          telefone: cliente.telefone ?? "",
-          cep: cliente.cep ?? "",
-          logradouro: cliente.logradouro ?? "",
-          complemento: cliente.complemento ?? "",
-          bairro: cliente.bairro ?? "",
-          localidade: cliente.localidade ?? "",
-          uf: cliente.uf ?? "",
-          estado: cliente.estado ?? "",
-          numero: cliente.numero ?? "",
-        });
+        const [clienteData, atendimentosData] = await Promise.all([
+          apiGet(`/clientes/${id}`),
+          apiGet("/atendimentos"),
+        ]);
+        setCliente(clienteData);
+        setAtendimentos(atendimentosData);
       } catch (e) {
         console.error(e);
-        alert("Não foi possível carregar o cliente.");
         router.push("/clientes");
       } finally {
         setLoading(false);
@@ -78,69 +64,185 @@ export default function ClientePage() {
     load();
   }, [id, router]);
 
-  useEffect(() => {
-    apiGet("/atendimentos")
-      .then(setAtendimentos)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  // Filtra atendimentos deste cliente
+  const clienteAtendimentos = useMemo(
+    () => atendimentos.filter((a) => a.cliente_id === Number(id)),
+    [atendimentos, id]
+  );
 
+  if (loading || !cliente) {
+    return (
+      <AppShell header={<Header title="Carregando..." />}>
+        <div className="flex items-center justify-center py-20">
+          <p className="text-sm" style={{ color: "var(--tropi-medium-gray)" }}>
+            Carregando dados do cliente...
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
 
-  if (loading) return <div style={{ padding: 24 }}>Carregando...</div>;
+  const endereco = buildEndereco(cliente);
 
   return (
-    <AppShell header={<Header title={form.nome} />}>
-        <div style={{ padding: 24 }}>
-          <form style={{ display: "grid", gap: 8, maxWidth: 420 }}>
-            <input name="cpf" placeholder="CPF" value={form.cpf} disabled />
-            <input name="email" placeholder="E-mail" value={form.email} disabled/>
-            <input name="telefone" placeholder="Telefone" value={form.telefone} disabled/>
-
-            <input name="cep" placeholder="CEP" value={form.cep} disabled/>
-            <input name="logradouro" placeholder="Logradouro" value={form.logradouro} disabled />
-            <input name="numero" placeholder="Número" value={form.numero} disabled />
-            <input name="complemento" placeholder="Complemento" value={form.complemento} disabled />
-            <input name="bairro" placeholder="Bairro" value={form.bairro} disabled />
-            <input name="localidade" placeholder="Cidade" value={form.localidade} disabled />
-            <input name="uf" placeholder="UF" value={form.uf} disabled />
-
-            <div style={{ padding: 24 }}>
-              <h1>Atendimentos</h1>
-              <Link href={`/atendimentos/${id}/novo`}>
-                  <Button variant={"tropi"} size={"lg"}>
-                      Adicionar Atendimento
-                  </Button>
-              </Link>
-              {loading && <p>Carregando atendimentos...</p>}
-
-              {!loading && atendimentos.length === 0 && (
-                <p>Nenhum atendimento cadastrado.</p>
-              )}
-
-              {!loading && atendimentos.length > 0 && (
-                <>
-                  <hr style={{ margin: "24px 0" }} />
-
-                  <h2>Atendimentos cadastrados</h2>
-                  <ul>
-                    {atendimentos.map((a) => (
-                      <li key={a.id}>
-                        {a.tipo_servico}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
+    <AppShell header={<Header title={cliente.nome} />}>
+      <div className="flex flex-col gap-6 p-6">
+        {/* === CARD DE CONTATO === */}
+        <div className="tropi-card flex flex-col gap-5" style={{ borderRadius: 24 }}>
+          {/* Telefone */}
+          {cliente.telefone && (
+            <div className="flex items-center gap-4">
+              <div
+                className="flex-shrink-0 flex items-center justify-center rounded-full"
+                style={{ width: 40, height: 40, backgroundColor: "var(--tropi-navy-blue)" }}
+              >
+                <Phone size={18} className="text-white" />
+              </div>
+              <span
+                className="text-base"
+                style={{ color: "var(--tropi-dark-gray)", letterSpacing: "-0.31px" }}
+              >
+                {formatPhone(cliente.telefone)}
+              </span>
             </div>
+          )}
 
-            <Link href={`/clientes/${id}/editar`}>
-                <Button variant={"link"}>
-                    Editar Cliente
-                </Button>
-            </Link>
+          {/* Email */}
+          {cliente.email && (
+            <div className="flex items-center gap-4">
+              <div
+                className="flex-shrink-0 flex items-center justify-center rounded-full"
+                style={{ width: 40, height: 40, backgroundColor: "var(--tropi-navy-blue)" }}
+              >
+                <Mail size={18} className="text-white" />
+              </div>
+              <span
+                className="text-base"
+                style={{ color: "var(--tropi-dark-gray)", letterSpacing: "-0.31px" }}
+              >
+                {cliente.email}
+              </span>
+            </div>
+          )}
 
-          </form>
+          {/* Endereço */}
+          {endereco && (
+            <div className="flex items-center gap-4">
+              <div
+                className="flex-shrink-0 flex items-center justify-center rounded-full"
+                style={{ width: 40, height: 40, backgroundColor: "var(--tropi-navy-blue)" }}
+              >
+                <MapPin size={18} className="text-white" />
+              </div>
+              <span
+                className="text-base leading-[22px]"
+                style={{ color: "var(--tropi-dark-gray)", letterSpacing: "-0.31px" }}
+              >
+                {endereco}
+              </span>
+            </div>
+          )}
         </div>
+
+        {/* === SEÇÃO DE ATENDIMENTOS === */}
+        <section className="flex flex-col gap-4">
+          <h2
+            className="font-bold"
+            style={{
+              fontSize: 20,
+              lineHeight: "28px",
+              color: "var(--tropi-dark-gray)",
+              letterSpacing: "-0.45px",
+            }}
+          >
+            Atendimentos
+          </h2>
+
+          {/* Botão Adicionar */}
+          <Button
+            variant="tropi"
+            size="tropi"
+            onClick={() => router.push(`/atendimentos/${id}/novo`)}
+          >
+            <Plus size={20} className="mr-2" />
+            Adicionar Atendimento
+          </Button>
+
+          {/* Lista de atendimentos */}
+          {clienteAtendimentos.length === 0 && (
+            <p className="text-sm py-4" style={{ color: "var(--tropi-medium-gray)" }}>
+              Nenhum atendimento registrado ainda.
+            </p>
+          )}
+
+          {clienteAtendimentos.length > 0 && (
+            <div className="flex flex-col gap-4">
+              {clienteAtendimentos.map((atendimento) => {
+                return (
+                  <ListCard
+                    key={atendimento.id}
+                    onClick={() =>
+                      router.push(`/atendimentos/${atendimento.id}/editar`)
+                    }
+                  >
+                    {/* Ícone do serviço */}
+                    <ServicoIcon tipo={atendimento.tipo_servico} />
+
+                    {/* Info */}
+                    <div className="flex-1 flex flex-col gap-1 min-w-0">
+                      <span
+                        className="font-semibold leading-[24px]"
+                        style={{
+                          fontSize: 16,
+                          color: "var(--tropi-dark-gray)",
+                          letterSpacing: "-0.31px",
+                        }}
+                      >
+                        {atendimento.resumo || atendimento.tipo_servico}
+                      </span>
+                      <span
+                        className="text-sm"
+                        style={{
+                          color: "var(--tropi-medium-gray)",
+                          letterSpacing: "-0.15px",
+                        }}
+                      >
+                        {atendimento.tipo_servico} •{" "}
+                        {formatDate(atendimento.data_hora_inicio)}
+                      </span>
+                    </div>
+
+                    {/* Seta */}
+                    <ChevronRight
+                      size={20}
+                      className="flex-shrink-0"
+                      style={{ color: "var(--tropi-medium-gray)" }}
+                    />
+                  </ListCard>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* === LINK EDITAR CLIENTE === */}
+        <button
+          onClick={() => router.push(`/clientes/${id}/editar`)}
+          className="flex items-center justify-center gap-3 py-4 transition hover:opacity-70"
+        >
+          <SquarePen size={18} style={{ color: "var(--tropi-moss-green)" }} />
+          <span
+            className="font-semibold"
+            style={{
+              fontSize: 16,
+              color: "var(--tropi-moss-green)",
+              letterSpacing: "-0.31px",
+            }}
+          >
+            Editar Cliente
+          </span>
+        </button>
+      </div>
     </AppShell>
   );
 }

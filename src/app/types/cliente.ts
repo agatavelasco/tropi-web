@@ -7,8 +7,11 @@ export interface Cliente {
   endereco?: string;
   cep?: string;
   logradouro?: string;
+  numero?: string;
   complemento?: string;
   bairro?: string;
   localidade?: string;
   uf?: string;
+  estado?: string;
+  observacoes?: string;
 }

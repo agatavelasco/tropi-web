@@ -60,6 +60,13 @@
   --tropi-bright-green: #9CB86F;
   --tropi-shadow: rgba(45, 42, 38, 0.08);
   --tropi-shadow-lg: rgba(45, 42, 38, 0.12);
+
+  /* Destructive */
+  --tropi-destructive: #C00000;
+  --tropi-destructive-bg: rgba(192, 0, 0, 0.1);
+
+  /* Composite shadows */
+  --tropi-list-shadow: 0px 2px 12px rgba(45, 42, 38, 0.06), 0px 1px 6px rgba(45, 42, 38, 0.03);
 }
 
 .dark {
@@ -281,6 +288,20 @@ html {
 
 .tropi-textarea:focus {
   border-color: var(--tropi-moss-green);
+}
+
+/* Modal slide-up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }
 
 /* Hide scrollbars in carousels */

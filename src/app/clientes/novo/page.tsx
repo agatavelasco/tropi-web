@@ -3,6 +3,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
+import { toast } from "@/lib/toast";
 import { Button } from "@/app/components/Buttom";
 import { Header } from "@/app/components/Header";
 import AppShell from "@/app/components/AppShell";
@@ -86,7 +87,7 @@ export default function NovoClientePage() {
       router.push("/clientes");
     } catch (err) {
       console.error("Erro ao salvar cliente", err);
-      alert("Erro ao salvar cliente.");
+      toast.error("Erro ao salvar cliente.");
     } finally {
       setLoading(false);
     }

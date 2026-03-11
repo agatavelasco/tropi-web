@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { BottomNavigation } from "@/app/components/BottomNavigation";
+import AuthGuard from "@/app/components/AuthGuard";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 function getScreenFromPath(pathname: string): string {
   if (pathname.startsWith("/home")) return "home";
@@ -25,8 +27,10 @@ export default function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useAuth();
 
   const currentScreen = useMemo(() => getScreenFromPath(pathname), [pathname]);
+  const shouldShowNav = showNavigation && !!user;
 
   const onNavigate = (screen: string) => {
     switch (screen) {
@@ -48,25 +52,26 @@ export default function AppShell({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--tropi-cream)]">
-      {/* ✅ HEADER FULL WIDTH */}
-      {header ? <div className="w-full">{header}</div> : null}
+    <AuthGuard>
+      <div className="min-h-screen bg-[var(--tropi-cream)]">
+        {/* ✅ HEADER FULL WIDTH */}
+        {header ? <div className="w-full">{header}</div> : null}
 
-      {/* ✅ CONTEÚDO CENTRAL */}
-      <div className="flex justify-center">
-        <div className="w-full max-w-[384px] min-h-screen bg-background relative">
-          {/* ✅ Só aplica padding quando a navegação existe */}
-          <main className={showNavigation ? "pb-28" : ""}>{children}</main>
+        {/* ✅ CONTEÚDO CENTRAL */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-[384px] min-h-screen bg-background relative">
+            {/* ✅ Só aplica padding quando a navegação existe */}
+            <main className={shouldShowNav ? "pb-28" : ""}>{children}</main>
 
-          {/* ✅ Sintaxe correta */}
-          {showNavigation && (
-            <BottomNavigation
-              currentScreen={currentScreen}
-              onNavigate={onNavigate}
-            />
-          )}
+            {shouldShowNav && (
+              <BottomNavigation
+                currentScreen={currentScreen}
+                onNavigate={onNavigate}
+              />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

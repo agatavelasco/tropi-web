@@ -3,9 +3,11 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPut, apiDelete } from "@/lib/api";
+import { toast } from "@/lib/toast";
 import { Button } from "@/app/components/Buttom";
 import { Header } from "@/app/components/Header";
 import AppShell from "@/app/components/AppShell";
+import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 
 interface ClienteForm {
   nome: string;
@@ -70,7 +72,7 @@ export default function EditarClientePage() {
         });
       } catch (e) {
         console.error(e);
-        alert("Não foi possível carregar o cliente.");
+        toast.error("Não foi possível carregar o cliente.");
         router.push("/clientes");
       } finally {
         setLoading(false);
@@ -117,7 +119,7 @@ export default function EditarClientePage() {
       router.push(`/clientes/${id}`);
     } catch (e) {
       console.error(e);
-      alert("Erro ao salvar alterações.");
+      toast.error("Erro ao salvar alterações.");
     } finally {
       setSalvando(false);
     }
@@ -130,7 +132,7 @@ export default function EditarClientePage() {
       router.push("/clientes");
     } catch (e) {
       console.error(e);
-      alert("Erro ao excluir cliente.");
+      toast.error("Erro ao excluir cliente.");
     } finally {
       setExcluindo(false);
     }
@@ -342,41 +344,24 @@ export default function EditarClientePage() {
             {salvando ? "Salvando..." : "Salvar Alterações"}
           </Button>
 
-          {!confirmExcluir ? (
-            <button
-              type="button"
-              onClick={() => setConfirmExcluir(true)}
-              className="w-full h-12 rounded-[16px] text-sm font-medium text-[var(--destructive)] hover:bg-red-50 transition"
-            >
-              Excluir cliente
-            </button>
-          ) : (
-            <div className="tropi-card flex flex-col items-center gap-4">
-              <p className="tropi-label text-center leading-5">
-                Tem certeza que deseja excluir este cliente? Esta ação não pode
-                ser desfeita.
-              </p>
-              <div className="flex gap-3 w-full">
-                <button
-                  type="button"
-                  onClick={() => setConfirmExcluir(false)}
-                  className="flex-1 h-12 rounded-[14px] text-sm font-medium bg-[#f3f3f5] text-[#0a0a0a] hover:bg-[#e8e8ea] transition"
-                >
-                  Voltar
-                </button>
-                <button
-                  type="button"
-                  onClick={onExcluir}
-                  disabled={excluindo}
-                  className="flex-1 h-12 rounded-[14px] text-sm font-medium bg-[var(--destructive)] text-white hover:opacity-90 transition disabled:opacity-50"
-                >
-                  {excluindo ? "Excluindo..." : "Excluir"}
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => setConfirmExcluir(true)}
+            className="w-full h-12 rounded-[16px] text-sm font-medium text-[var(--destructive)] hover:bg-red-50 transition"
+          >
+            Excluir cliente
+          </button>
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        open={confirmExcluir}
+        title="Tem certeza que deseja excluir o cliente?"
+        confirmLabel="Excluir cliente"
+        loading={excluindo}
+        onConfirm={onExcluir}
+        onCancel={() => setConfirmExcluir(false)}
+      />
     </AppShell>
   );
 }
