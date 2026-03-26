@@ -11,8 +11,9 @@ import ListCard from "../components/ListCard";
 import ClienteAvatar from "../components/ClienteAvatar";
 import ServicoIcon from "../components/ServicoIcon";
 import { formatPhone, formatDate } from "@/lib/formatters";
+import { useAuth } from "../contexts/AuthContext";
 
-function HomeHeader() {
+function HomeHeader({ primeiroNome }: { primeiroNome: string }) {
   return (
     <header
       className="relative w-full overflow-hidden"
@@ -54,7 +55,7 @@ function HomeHeader() {
               letterSpacing: "0.4px",
             }}
           >
-            Olá, Ágata
+            Olá, {primeiroNome}
           </h1>
           <div className="flex items-center gap-2">
             <Sparkles size={20} className="text-white" />
@@ -88,6 +89,9 @@ function HomeHeader() {
 
 export default function HomePage() {
   const router = useRouter();
+  const { user } = useAuth();
+  const primeiroNome = (user?.user_metadata?.full_name ?? user?.email ?? "")
+    .split(" ")[0];
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +119,7 @@ export default function HomePage() {
   const recentAtendimentos = atendimentos.slice(0, 3);
 
   return (
-    <AppShell header={<HomeHeader />} showNavigation={true}>
+    <AppShell header={<HomeHeader primeiroNome={primeiroNome} />} showNavigation={true}>
       <div className="flex flex-col gap-8 pt-6 px-6">
         {/* === CLIENTES RECENTES === */}
         <section className="flex flex-col gap-5">
