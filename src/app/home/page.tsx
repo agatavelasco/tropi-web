@@ -90,7 +90,7 @@ function HomeHeader({ primeiroNome }: { primeiroNome: string }) {
 export default function HomePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const primeiroNome = (user?.user_metadata?.full_name ?? user?.email ?? "")
+  const primeiroNome = (user?.user_metadata?.nome_completo ?? user?.email ?? "")
     .split(" ")[0];
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
