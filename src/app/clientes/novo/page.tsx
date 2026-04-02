@@ -127,7 +127,6 @@ export default function NovoClientePage() {
               placeholder="000.000.000-00"
               value={form.cpf}
               onChange={handleChange}
-              required
             />
           </div>
 
@@ -157,7 +156,6 @@ export default function NovoClientePage() {
               placeholder="cliente@email.com"
               value={form.email}
               onChange={handleChange}
-              required
             />
           </div>
         </div>
